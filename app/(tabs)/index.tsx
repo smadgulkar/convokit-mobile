@@ -16,7 +16,13 @@ export default function ContextSelection() {
               description={context.description}
               icon={context.icon}
               iconColor={context.color}
-              onPress={() => router.push(`/categories/${context.id}`)}
+              onPress={() => {
+                if (context.id === 'custom') {
+                  router.push('/(tabs)/custom-context');
+                } else {
+                  router.push(`/(tabs)/categories/${context.id}`);
+                }
+              }}
             />
           ))}
         </View>

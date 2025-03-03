@@ -11,7 +11,7 @@ export const generateConversation = async (prompt: string) => {
       messages: [
         {
           role: "system",
-          content: "You are a conversation expert. You MUST respond using EXACTLY this format, with NO additional text:MAIN:[your single question here]FOLLOWUPS:1. [first follow-up]2. [second follow-up]3. [third follow-up]"
+          content: "You are a conversation expert. You MUST respond using EXACTLY this format, with NO additional text:MAIN:[your single question here]FOLLOWUPS:1. [first follow-up]2. [second follow-up]3. [third follow-up]AVOID:1. [first thing to avoid]2. [second thing to avoid]"
         },
         {
           role: "user",
