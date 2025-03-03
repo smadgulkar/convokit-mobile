@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, ScrollView, SafeAreaView, TouchableO
 import { Stack, router } from 'expo-router';
 import { Button } from '../../components/ui/Button';
 import { generateConversation } from '../../services/openai';
+import theme from '../../constants/theme';
 
 export default function CustomContext() {
   const [situation, setSituation] = useState('');
@@ -92,43 +93,49 @@ export default function CustomContext() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: theme.colors.ui.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[10],
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.ui.text,
+    marginBottom: theme.spacing[2],
   },
   description: {
-    fontSize: 16,
-    color: '#4B5563',
-    marginBottom: 24,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.ui.textSecondary,
+    marginBottom: theme.spacing[6],
+    lineHeight: theme.typography.lineHeight.normal,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: theme.spacing[5],
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.ui.text,
+    marginBottom: theme.spacing[2],
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.ui.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#111827',
+    borderColor: theme.colors.ui.border,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[3],
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.ui.text,
     textAlignVertical: 'top',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   loader: {
-    marginTop: 20,
+    marginTop: theme.spacing[5],
   }
 }); 

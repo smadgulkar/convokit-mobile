@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, ScrollView, SafeAreaView, TouchableO
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Button } from '../../components/ui/Button';
 import { Feather } from '@expo/vector-icons';
+import theme from '../../constants/theme';
 
 interface Message {
   id: string;
@@ -147,80 +148,81 @@ export default function PracticeMode() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: theme.colors.ui.background,
   },
   tipContainer: {
-    backgroundColor: '#EFF6FF',
-    padding: 16,
-    borderRadius: 8,
-    margin: 16,
+    backgroundColor: theme.colors.accent.blue + '10', // 10% opacity
+    padding: theme.spacing[4],
+    borderRadius: theme.borderRadius.lg,
+    margin: theme.spacing[4],
     flexDirection: 'row',
     alignItems: 'center',
     borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6',
+    borderLeftColor: theme.colors.accent.blue,
   },
   tipText: {
     flex: 1,
-    fontSize: 14,
-    color: '#1E40AF',
-    lineHeight: 20,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.accent.blue,
+    lineHeight: theme.typography.lineHeight.normal,
   },
   closeTip: {
-    padding: 4,
+    padding: theme.spacing[1],
   },
   messagesContainer: {
     flex: 1,
   },
   messagesContent: {
-    padding: 16,
-    paddingBottom: 16,
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[4],
   },
   messageBubble: {
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
+    padding: theme.spacing[3],
+    borderRadius: theme.borderRadius.xl,
+    marginBottom: theme.spacing[2],
     maxWidth: '80%',
   },
   userBubble: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: theme.colors.primary[500],
     alignSelf: 'flex-end',
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: theme.borderRadius.sm,
   },
   aiBubble: {
-    backgroundColor: '#4B5563',
+    backgroundColor: theme.colors.neutral[700],
     alignSelf: 'flex-start',
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: theme.borderRadius.sm,
   },
   messageText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.base,
+    lineHeight: theme.typography.lineHeight.normal,
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#fff',
+    padding: theme.spacing[4],
+    backgroundColor: theme.colors.ui.card,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: theme.colors.ui.border,
   },
   input: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 20,
-    padding: 12,
-    paddingTop: 12,
-    fontSize: 16,
+    backgroundColor: theme.colors.neutral[100],
+    borderRadius: theme.borderRadius.full,
+    padding: theme.spacing[3],
+    paddingTop: theme.spacing[3],
+    fontSize: theme.typography.fontSize.base,
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: theme.colors.primary[500],
     width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: theme.spacing[2],
   },
   disabledButton: {
-    backgroundColor: '#93C5FD',
+    backgroundColor: theme.colors.primary[300],
   },
 }); 
