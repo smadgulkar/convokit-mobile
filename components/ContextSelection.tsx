@@ -1,10 +1,19 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
-import { Card } from '../../components/ui/Card';
-import { contexts } from '../../constants/contexts';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Card } from './ui/Card';
+import { contexts } from '../src/constants/contexts';
+
+type RootStackParamList = {
+  Categories: { contextId: string };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ContextSelection() {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -16,7 +25,7 @@ export default function ContextSelection() {
               description={context.description}
               icon={context.icon}
               iconColor={context.color}
-              onPress={() => router.push(`/categories/${context.id}`)}
+              onPress={() => navigation.navigate('Categories', { contextId: context.id })}
             />
           ))}
         </View>
