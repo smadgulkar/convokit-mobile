@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { Button } from '../../components/ui/Button';
 import { Feather } from '@expo/vector-icons';
 import theme from '../../constants/theme';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -18,6 +19,7 @@ export default function PracticeMode() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [tipVisible, setTipVisible] = useState(true);
+  const { canAccessPremiumFeature } = useAuth();
 
   useEffect(() => {
     // Initialize with the main question
@@ -83,6 +85,27 @@ export default function PracticeMode() {
     
     return responses[Math.floor(Math.random() * responses.length)];
   };
+
+  // Check if user can access practice
+  if (!canAccessPremiumFeature('practice')) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ title: "Practice" }} />
+        <View style={styles.premiumRequired}>
+          <Feather name="lock" size={40} color={theme.colors.primary[400]} />
+          <Text style={styles.premiumTitle}>Premium Feature</Text>
+          <Text style={styles.premiumText}>
+            Practice conversations are available only for premium users.
+          </Text>
+          <Button 
+            label="Upgrade to Premium" 
+            onPress={() => router.push('/upgrade')}
+            fullWidth
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <>
@@ -224,5 +247,21 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: theme.colors.primary[300],
+  },
+  premiumRequired: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing[4],
+  },
+  premiumTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: 'bold',
+    marginBottom: theme.spacing[2],
+  },
+  premiumText: {
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.neutral[500],
+    marginBottom: theme.spacing[4],
   },
 }); 

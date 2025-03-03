@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { generateConversation } from '../../services/openai';
 import { Feather } from '@expo/vector-icons';
 import theme from '../../constants/theme';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ParsedResponse {
   main: string;
@@ -41,10 +42,29 @@ export default function QuestionDisplay() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const { profile, decrementDailyGenerations } = useAuth();
 
   useEffect(() => {
     const fetchQuestion = async () => {
+      if (!profile || profile.dailyGenerationsLeft <= 0) {
+        setError("You've reached your daily limit of conversation starters. Please try again tomorrow or upgrade to premium.");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      
       try {
+        // Decrement the user's daily generations
+        const success = await decrementDailyGenerations();
+        
+        if (!success) {
+          setError("You've reached your daily limit of conversation starters. Please try again tomorrow or upgrade to premium.");
+          setLoading(false);
+          return;
+        }
+        
+        // Continue with generation
         const response = await generateConversation(prompt || '');
         if (response) {
           setQuestion(parseResponse(response));
@@ -57,7 +77,7 @@ export default function QuestionDisplay() {
     };
 
     fetchQuestion();
-  }, [prompt]);
+  }, [prompt, profile, decrementDailyGenerations]);
 
   const copyToClipboard = (text: string) => {
     Clipboard.setString(text);
