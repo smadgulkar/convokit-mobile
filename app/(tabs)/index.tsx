@@ -1,16 +1,47 @@
-import React, { useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, SafeAreaView, Text, Animated, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, SafeAreaView, Text, Animated, TouchableOpacity, Alert } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Card } from '../../components/ui/Card';
 import { contexts } from '../../constants/contexts';
 import theme from '../../constants/theme';
 import { useAuth, UserTier } from '../../contexts/AuthContext';
 import { Feather } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
 
 type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | undefined;
 
 export default function ContextSelection() {
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
+  const [loading, setLoading] = useState(false);
+  
+  // Fetch user profile from Supabase
+  useEffect(() => {
+    if (session) {
+      const fetchProfile = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching profile:', error);
+          } else {
+            console.log('Profile data:', data);
+            // You can update local state with this data if needed
+          }
+        } catch (error) {
+          console.error('Unexpected error:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProfile();
+    }
+  }, [session]);
   
   // Filter contexts based on user tier
   const availableContexts = contexts.filter(context => {
@@ -65,51 +96,57 @@ export default function ContextSelection() {
         }} 
       />
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Animated.View style={[
-            styles.header,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY }]
-            }
-          ]}>
-            <Text style={styles.title}>Choose a Context</Text>
-            <Text style={styles.subtitle}>
-              Select a conversation context to get started
-            </Text>
-          </Animated.View>
-          
-          <View style={styles.grid}>
-            {availableContexts.map((context, index) => (
-              <Animated.View
-                key={context.id}
-                style={{
-                  opacity: fadeAnim,
-                  transform: [{ 
-                    translateY: translateY.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 15 * (index + 1)]
-                    }) 
-                  }]
-                }}
-              >
-                <Card
-                  title={context.label}
-                  description={context.description}
-                  icon={context.icon}
-                  iconColor={context.color}
-                  onPress={() => {
-                    if (context.id === 'custom') {
-                      router.push('/(tabs)/custom-context');
-                    } else {
-                      router.push(`/(tabs)/categories/${context.id}`);
-                    }
-                  }}
-                />
-              </Animated.View>
-            ))}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text>Loading your profile...</Text>
           </View>
-        </ScrollView>
+        ) : (
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <Animated.View style={[
+              styles.header,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY }]
+              }
+            ]}>
+              <Text style={styles.title}>Choose a Context</Text>
+              <Text style={styles.subtitle}>
+                Select a conversation context to get started
+              </Text>
+            </Animated.View>
+            
+            <View style={styles.grid}>
+              {availableContexts.map((context, index) => (
+                <Animated.View
+                  key={context.id}
+                  style={{
+                    opacity: fadeAnim,
+                    transform: [{ 
+                      translateY: translateY.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 15 * (index + 1)]
+                      }) 
+                    }]
+                  }}
+                >
+                  <Card
+                    title={context.label}
+                    description={context.description}
+                    icon={context.icon}
+                    iconColor={context.color}
+                    onPress={() => {
+                      if (context.id === 'custom') {
+                        router.push('/(tabs)/custom-context');
+                      } else {
+                        router.push(`/(tabs)/categories/${context.id}`);
+                      }
+                    }}
+                  />
+                </Animated.View>
+              ))}
+            </View>
+          </ScrollView>
+        )}
       </SafeAreaView>
     </>
   );
@@ -158,5 +195,10 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     padding: theme.spacing[1],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }); 

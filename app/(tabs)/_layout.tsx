@@ -30,13 +30,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Feather name="message-circle" size={20} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: 'Practice',
-          tabBarIcon: ({ color }) => <Feather name="users" size={20} color={color} />,
-        }}
-      />
     </Tabs>
   );
 }

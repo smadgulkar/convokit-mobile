@@ -108,7 +108,7 @@ export default function QuestionDisplay() {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{error}</Text>
-        <Button label="Try Again" onPress={() => setLoading(true)} />
+        <Button label="Upgrade to Premium" onPress={() => router.push('/upgrade')} />
       </View>
     );
   }

@@ -1,30 +1,22 @@
 import { supabase } from '../lib/supabase';
 
-// Function to get OpenAI API key from Supabase
-async function getOpenAIKey(): Promise<string> {
-  try {
-    const { data, error } = await supabase
-      .from('api_keys')
-      .select('key')
-      .eq('name', 'openai')
-      .single();
-      
-    if (error) {
-      console.error('Error fetching API key:', error);
-      throw new Error('Failed to fetch API key');
-    }
-    
-    return data.key;
-  } catch (error) {
-    console.error('Unexpected error fetching API key:', error);
-    throw new Error('Failed to fetch API key');
-  }
-}
-
 export async function generateConversation(prompt: string): Promise<string> {
   try {
-    const apiKey = await getOpenAIKey();
+    // Get the user's session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
+
+    // Get the OpenAI API key from the database function
+    const { data: apiKey, error: apiKeyError } = await supabase.rpc('get_openai_key');
     
+    if (apiKeyError) {
+      console.error('Error getting API key:', apiKeyError);
+      throw new Error('Failed to retrieve API key');
+    }
+
+    // Call OpenAI API directly
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -32,7 +24,7 @@ export async function generateConversation(prompt: string): Promise<string> {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',

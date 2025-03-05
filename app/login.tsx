@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Feather } from '@expo/vector-icons';
 import theme from '../constants/theme';
+import { testSupabaseConnection } from '../lib/supabase';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -113,6 +114,15 @@ export default function LoginScreen() {
             <Text style={styles.signUpText}>Sign Up</Text>
           </TouchableOpacity>
         </View>
+        
+        <Button 
+          label="Test Supabase Connection" 
+          onPress={async () => {
+            const result = await testSupabaseConnection();
+            Alert.alert('Connection Test', JSON.stringify(result, null, 2));
+          }}
+          style={{ marginTop: 10 }}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

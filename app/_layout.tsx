@@ -44,11 +44,10 @@ function RootLayoutNav() {
         {session ? (
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         ) : (
-          <>
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="register" options={{ headerShown: false }} />
-          </>
+          <Stack.Screen name="index" options={{ headerShown: false, redirect: true }} />
         )}
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ title: "Your Profile" }} />
         <Stack.Screen name="upgrade" options={{ title: "Upgrade to Premium" }} />
       </Stack>
