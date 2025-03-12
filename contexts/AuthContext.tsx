@@ -1,82 +1,122 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { testSupabaseConnection } from '../lib/supabase';
-
-// Define user tiers
-export enum UserTier {
-  FREE = 'free',
-  PREMIUM = 'premium',
-}
+import { Alert } from 'react-native';
 
 // Define user profile type
 type UserProfile = {
   id: string;
   email: string;
-  tier: UserTier;
-  dailyGenerationsLeft: number;
 };
 
 // Define auth context type
 type AuthContextType = {
-  session: any | null;
+  session: any;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: { message: string } }>;
-  signUp: (email: string, password: string) => Promise<{ error?: { message: string } }>;
+  signIn: (email: string, password: string) => Promise<{ error?: any }>;
+  signUp: (email: string, password: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
-  canAccessPremiumFeature: (feature: string) => boolean;
-  decrementDailyGenerations: () => Promise<boolean>;
+  fetchProfile: () => Promise<void>;
+  setProfile: (profile: UserProfile | null | ((prev: UserProfile | null) => UserProfile | null)) => void;
 };
 
-// Create context
+// Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user for development
-const mockUser: UserProfile = {
-  id: '123',
-  email: 'test@example.com',
-  tier: UserTier.FREE,
-  dailyGenerationsLeft: 5,
-};
 
 // Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null); // Start with null
+  const [session, setSession] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for existing session
+  // Check for existing session on mount
   useEffect(() => {
-    // Check for existing session
     const checkSession = async () => {
       try {
-        setLoading(true);
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
+        const { data, error } = await supabase.auth.getSession();
         
-        // If we have a session, set the mock profile
-        if (data.session) {
-          setProfile(mockUser);
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (data.session) {
+          setSession(data.session);
+          
+          // Try to get the user's profile
+          await fetchAndCreateProfileIfNeeded(data.session.user.id, data.session.user.email);
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('Unexpected error checking session:', error);
       } finally {
         setLoading(false);
       }
     };
     
     checkSession();
+    
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      setSession(newSession);
+      
+      if (newSession) {
+        await fetchAndCreateProfileIfNeeded(newSession.user.id, newSession.user.email);
+      } else {
+        setProfile(null);
+      }
+    });
+    
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
+  
+  // Function to fetch profile or create it if it doesn't exist
+  const fetchAndCreateProfileIfNeeded = async (userId: string, email: string) => {
+    try {
+      console.log('Fetching profile for user:', userId);
+      
+      // Try to get the profile
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (fetchError) {
+        console.log('Profile not found, creating one...');
+        
+        // Create a profile if it doesn't exist
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ id: userId, email: email }])
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          
+          // Set a default profile in memory even if DB creation failed
+          setProfile({ id: userId, email: email });
+        } else {
+          console.log('Profile created successfully:', newProfile);
+          setProfile({ id: userId, email: email });
+        }
+      } else {
+        console.log('Profile found:', existingProfile);
+        setProfile({ id: userId, email: email });
+      }
+    } catch (error) {
+      console.error('Error in fetchAndCreateProfileIfNeeded:', error);
+      
+      // Set a default profile in memory as fallback
+      setProfile({ id: userId, email: email });
+    }
+  };
 
-  // Mock auth functions
+  // Sign in function
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Signing in with:', email);
       setLoading(true);
-      
-      // Test connection first
-      const testResult = await testSupabaseConnection();
-      console.log('Connection test result:', testResult);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -91,15 +131,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setSession(data.session);
-      setProfile({
-        id: data.session?.user.id || '123',
-        email,
-        tier: UserTier.FREE,
-        dailyGenerationsLeft: 5,
-      });
+      
+      // Fetch or create profile
+      if (data.session) {
+        await fetchAndCreateProfileIfNeeded(data.session.user.id, email);
+      }
       
       return { error: undefined };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected sign in error:', error);
       return { error: { message: error.message } };
     } finally {
@@ -107,25 +146,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign up function
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // First check if the user already exists
+      const { data: existingUsers, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email);
+        
+      if (checkError) {
+        console.error('Error checking existing user:', checkError);
+      } else if (existingUsers && existingUsers.length > 0) {
+        return { error: { message: 'A user with this email already exists' } };
+      }
+      
+      // Create the user in auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
       
       if (error) {
+        console.error('Error signing up:', error);
         return { error };
       }
       
-      setSession(data.session);
-      setProfile({
-        id: data.session?.user.id || '123',
-        email,
-        tier: UserTier.FREE,
-        dailyGenerationsLeft: 5,
-      });
+      if (!data.user) {
+        return { error: { message: 'Failed to create user' } };
+      }
+      
+      // Wait a moment to ensure auth is processed
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create a profile for the new user
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([{ id: data.user.id, email }]);
+      
+      if (profileError) {
+        console.error('Error creating profile during signup:', profileError);
+      }
+      
+      // Set profile in state
+      setProfile({ id: data.user.id, email });
       
       return { error: undefined };
     } catch (error: any) {
@@ -135,6 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign out function
   const signOut = async () => {
     try {
       setLoading(true);
@@ -148,29 +215,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Add the missing function
-  const canAccessPremiumFeature = (feature: string) => {
-    if (!profile) return false;
-    return profile.tier === UserTier.PREMIUM;
-  };
-
-  // Fix the decrementDailyGenerations function to return a Promise<boolean>
-  const decrementDailyGenerations = async (): Promise<boolean> => {
-    if (!profile) return false;
+  // Add the fetchProfile function to the provider
+  const fetchProfile = async () => {
+    if (!session) return;
     
-    if (profile.tier === UserTier.PREMIUM) {
-      return true; // Premium users have unlimited generations
+    try {
+      console.log('Manually refreshing profile for user:', session.user.id);
+      
+      // Get the latest profile data
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error refreshing profile:', error);
+      } else if (data) {
+        console.log('Profile refreshed:', data);
+        setProfile({ id: session.user.id, email: session.user.email });
+      }
+    } catch (error) {
+      console.error('Unexpected error in fetchProfile:', error);
     }
-    
-    if (profile.dailyGenerationsLeft > 0) {
-      setProfile({
-        ...profile,
-        dailyGenerationsLeft: profile.dailyGenerationsLeft - 1,
-      });
-      return true;
-    }
-    
-    return false;
   };
 
   return (
@@ -182,8 +249,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
-        canAccessPremiumFeature,
-        decrementDailyGenerations,
+        fetchProfile,
+        setProfile,
       }}
     >
       {children}

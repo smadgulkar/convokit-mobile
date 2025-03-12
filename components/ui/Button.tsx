@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Animated, ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import theme from '../../constants/theme';
 
@@ -12,6 +12,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
+  style?: ViewStyle;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -23,6 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   loading = false,
   fullWidth = false,
+  style,
 }) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   
@@ -42,6 +44,33 @@ export const Button: React.FC<ButtonProps> = ({
     }).start();
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <ActivityIndicator 
+          size="small" 
+          color={variant === 'default' ? '#fff' : theme.colors.primary[500]} 
+        />
+      );
+    }
+
+    return (
+      <>
+        {icon && <Feather name={icon} size={size === 'sm' ? 16 : 20} style={[
+          styles.icon, 
+          variant !== 'default' && styles.nonDefaultIcon
+        ]} />}
+        <Text style={[
+          styles.label, 
+          styles[`${size}Label`],
+          variant !== 'default' && styles.nonDefaultLabel
+        ]}>
+          {label}
+        </Text>
+      </>
+    );
+  };
+
   return (
     <Animated.View style={[
       fullWidth && styles.fullWidth,
@@ -53,35 +82,17 @@ export const Button: React.FC<ButtonProps> = ({
           styles[`${size}Button`],
           variant === 'outline' && styles.outlineButton,
           variant === 'ghost' && styles.ghostButton,
-          disabled && styles.disabled,
+          disabled && styles.disabledButton,
           fullWidth && styles.fullWidth,
+          style,
         ]}
         onPress={onPress}
         disabled={disabled || loading}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        activeOpacity={0.9}
+        activeOpacity={0.7}
       >
-        {loading ? (
-          <ActivityIndicator 
-            size="small" 
-            color={variant === 'default' ? '#fff' : theme.colors.primary[500]} 
-          />
-        ) : (
-          <>
-            {icon && <Feather name={icon} size={size === 'sm' ? 16 : 20} style={[
-              styles.icon, 
-              variant !== 'default' && styles.nonDefaultIcon
-            ]} />}
-            <Text style={[
-              styles.label, 
-              styles[`${size}Label`],
-              variant !== 'default' && styles.nonDefaultLabel
-            ]}>
-              {label}
-            </Text>
-          </>
-        )}
+        {renderContent()}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -92,20 +103,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 12,
     backgroundColor: theme.colors.primary[500],
   },
   smButton: {
-    paddingVertical: theme.spacing[2],
-    paddingHorizontal: theme.spacing[3],
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   mdButton: {
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[4],
+    paddingVertical: 12,
+    paddingHorizontal: 24,
   },
   lgButton: {
-    paddingVertical: theme.spacing[4],
-    paddingHorizontal: theme.spacing[5],
+    paddingVertical: 16,
+    paddingHorizontal: 32,
   },
   outlineButton: {
     backgroundColor: 'transparent',
@@ -115,14 +126,14 @@ const styles = StyleSheet.create({
   ghostButton: {
     backgroundColor: 'transparent',
   },
-  disabled: {
+  disabledButton: {
     opacity: 0.5,
   },
   fullWidth: {
     width: '100%',
   },
   icon: {
-    marginRight: theme.spacing[2],
+    marginRight: 8,
     color: '#fff',
   },
   nonDefaultIcon: {
@@ -130,16 +141,16 @@ const styles = StyleSheet.create({
   },
   label: {
     color: '#fff',
-    fontWeight: theme.typography.fontWeight.medium,
+    fontWeight: 'bold',
   },
   smLabel: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
   },
   mdLabel: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 16,
   },
   lgLabel: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: 18,
   },
   nonDefaultLabel: {
     color: theme.colors.primary[500],

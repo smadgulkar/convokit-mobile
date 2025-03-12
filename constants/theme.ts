@@ -1,16 +1,16 @@
 export const colors = {
   // Primary palette
   primary: {
-    50: '#EBF8FF',
-    100: '#D1EFFF',
-    200: '#A7DFFF',
-    300: '#7CCEFF',
-    400: '#4EBEFF',
-    500: '#0CA5E9',  // Main primary color
-    600: '#0987C5',
-    700: '#0669A3',
-    800: '#044E7A',
-    900: '#023352',
+    50: '#E6F7F4',
+    100: '#CCEFE9',
+    200: '#99DFD3',
+    300: '#66CFBD',
+    400: '#33BFA7',
+    500: '#00AF91',  // Main teal color
+    600: '#008C74',
+    700: '#006957',
+    800: '#00463A',
+    900: '#00231D',
   },
   
   // Neutral palette
@@ -46,10 +46,10 @@ export const colors = {
   
   // UI colors
   ui: {
-    background: '#F9FAFB',
+    background: '#F5F9FA',
     card: '#FFFFFF',
     text: '#111827',
-    textSecondary: '#6B7280',
+    textSecondary: '#4B5563',
     border: '#E5E7EB',
   }
 };
@@ -86,7 +86,6 @@ export const typography = {
 
 export const spacing = {
   0: 0,
-  0.5: 2,
   1: 4,
   2: 8,
   3: 12,
@@ -97,8 +96,6 @@ export const spacing = {
   10: 40,
   12: 48,
   16: 64,
-  20: 80,
-  24: 96,
 };
 
 export const borderRadius = {
@@ -107,7 +104,6 @@ export const borderRadius = {
   md: 8,
   lg: 12,
   xl: 16,
-  '2xl': 24,
   full: 9999,
 };
 
@@ -130,7 +126,7 @@ export const shadows = {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 4,
   },
 };

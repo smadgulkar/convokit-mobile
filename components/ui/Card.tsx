@@ -2,7 +2,6 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import theme from '../../constants/theme';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface CardProps {
   onPress: () => void;
@@ -18,7 +17,7 @@ export const Card: React.FC<CardProps> = ({
   title,
   description,
   icon,
-  iconColor = theme.colors.neutral[900],
+  iconColor = theme.colors.primary[500],
   disabled = false,
 }) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
@@ -39,10 +38,20 @@ export const Card: React.FC<CardProps> = ({
     }).start();
   };
 
-  const gradientColors = [
-    iconColor + '10',
-    iconColor + '20',
-  ];
+  // Convert string icon names to Feather icon names
+  const getIconName = (iconStr: string) => {
+    // Map emoji or text to Feather icon names
+    const iconMap: {[key: string]: string} = {
+      '📱': 'smartphone',
+      '👥': 'users',
+      '💼': 'briefcase',
+      '❤️': 'heart',
+      '🏠': 'home',
+      '✏️': 'edit',
+    };
+    
+    return iconMap[iconStr] || iconStr;
+  };
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -55,8 +64,8 @@ export const Card: React.FC<CardProps> = ({
         activeOpacity={0.9}
       >
         {icon && (
-          <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
-            <Feather name={icon} size={24} color={iconColor} />
+          <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
+            <Feather name={getIconName(icon)} size={24} color={iconColor} />
           </View>
         )}
         <View style={styles.content}>
@@ -72,14 +81,11 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing[4],
+    padding: 16,
     backgroundColor: theme.colors.ui.card,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 12,
     ...theme.shadows.md,
-    marginBottom: theme.spacing[3],
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[100],
-    overflow: 'hidden',
+    marginBottom: 16,
   },
   disabled: {
     opacity: 0.5,
@@ -87,23 +93,22 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.neutral[50],
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: theme.spacing[4],
+    marginRight: 16,
   },
   content: {
     flex: 1,
   },
   title: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.semibold,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: theme.colors.ui.text,
-    marginBottom: theme.spacing[1],
+    marginBottom: 4,
   },
   description: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     color: theme.colors.ui.textSecondary,
   },
 }); 

@@ -45,17 +45,17 @@ export const contexts: Context[] = [
       {
         id: 'party',
         label: 'Party',
-        prompt: 'Generate a fun party conversation starter that can work with new people in a social setting.',
+        prompt: 'Generate fun and engaging conversation starters for parties and social gatherings.',
       },
       {
         id: 'smalltalk',
         label: 'Small Talk',
-        prompt: 'Create a casual small talk conversation starter that can work in any social situation while avoiding awkwardness.',
+        prompt: 'Create effective small talk conversation starters that can work in any casual social situation.',
       },
       {
-        id: 'dinner',
-        label: 'Dinner Party',
-        prompt: 'Generate engaging dinner table conversation starters that can involve everyone present and create memorable discussions.',
+        id: 'dating',
+        label: 'First Date',
+        prompt: 'Generate interesting first date conversation starters that help create connection without being too intense.',
       },
     ],
   },

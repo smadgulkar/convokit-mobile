@@ -1,56 +1,36 @@
-import React from 'react';
-import { Stack, Redirect } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { AuthProvider } from '../contexts/AuthContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import theme from '../constants/theme';
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import * as SplashScreen from 'expo-splash-screen';
 
-// Root layout with auth provider
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
-  );
-}
+  useEffect(() => {
+    // Hide splash screen after a delay
+    const hideSplash = async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await SplashScreen.hideAsync();
+    };
+    
+    hideSplash();
+  }, []);
 
-// Navigation with auth check
-function RootLayoutNav() {
-  const { session, loading } = useAuth();
-  
-  // Don't render anything until we've checked auth
-  if (loading) return null;
-  
   return (
-    <>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: theme.colors.ui.card,
-          },
-          headerShadowVisible: false,
-          headerTitleStyle: {
-            fontWeight: '600',
-            fontSize: 18,
-            color: theme.colors.ui.text,
-          },
-          headerTintColor: theme.colors.primary[600],
-          contentStyle: {
-            backgroundColor: theme.colors.ui.background,
-          },
-          animation: 'slide_from_right',
-        }}
-      >
-        {session ? (
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        ) : (
-          <Stack.Screen name="index" options={{ headerShown: false, redirect: true }} />
-        )}
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="profile" options={{ title: "Your Profile" }} />
-        <Stack.Screen name="upgrade" options={{ title: "Upgrade to Premium" }} />
-      </Stack>
-    </>
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <AuthProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#121212' },
+            animation: 'fade',
+          }}
+        />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 } 
